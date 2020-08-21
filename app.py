@@ -69,8 +69,9 @@ def signup_post():
     db.session.add(new_user)
     db.session.commit()
     
-    if user: # if a user is found, we want to redirect back to signup page so user can try again
-        flash('Email address already exists')
+    check_user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
+
+    if check_user: # if a user is found, we want to redirect back to signup page so user can try again
         return redirect(url_for('auth.signup'))
     else:
         return "What the fuck"
