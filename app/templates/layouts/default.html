@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+
+        {% include 'includes/header.html' %}
+
+    </head>
+    <body>
+
+        <div id="preloader">
+            <div id="status"></div>
+        </div>     
+
+        {{ content | safe }} 
+        
+        {% include 'includes/footer.html' %}
+
+        <!-- Back To Top Button -->
+        <div id="backtotop">
+            <a href="#"></a>
+        </div>        
+
+        {% include 'includes/modal-auth.html' %}
+        
+        {% include 'includes/sidebar.html' %}
+
+        {% include 'includes/scripts.html' %}
+
+    </body>
+
+</html>

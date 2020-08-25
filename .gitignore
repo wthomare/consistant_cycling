@@ -1,2 +1,10 @@
-
-*.sqlite
+flask/
+*.pyc
+dev
+node_modules
+app/database.db
+app/build
+yarn.lock
+yarn-error.log
+screenshots/app-thumb-700x400.psd
+*.psd
