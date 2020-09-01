@@ -2,13 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Flask-Dropzone Demo: Large File</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="../images/fav_icon.png" type="image/x-icon">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+  <!-- Bulma Version 0.9.0-->
+  <link rel="stylesheet" href="https://unpkg.com/bulma@0.9.0/css/bulma.min.css" />
+  <style type="text/css">
+      html,
+      body {
+          font-family: 'Open Sans';
+      }
+
+      img {
+          padding: 5px;
+          border: 1px solid #ccc;
+      }
+  </style>
+  <title>Flask-Dropzone : Large File</title>
   {{ dropzone.load_css() }}
   {{ dropzone.style('border: 2px dashed #0087F7; margin: 10%; min-height: 400px;') }}
 </head>
+
 <body>
-  {{ dropzone.create(action='upload') }}
-  {{ dropzone.load_js() }}
-  {{ dropzone.config() }}
+<section class="hero is-fullheight is-default is-bold">
+    <div class="hero-head">
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a class="navbar-item" href="{{ url_for('upload') }}">
+                        <img src="https://s1.qwant.com/thumbr/0x380/9/c/e2d49f37272500c505d3fb6c7aafda9467cf6fc3dd5a4ef1c363b911f57b5f/Add-icon.png?u=http%3A%2F%2Ficons.iconarchive.com%2Ficons%2Fkyo-tux%2Fdelikate%2F512%2FAdd-icon.png&q=0&b=1&p=0&a=1" alt="Add race">
+                    </a>
+                    <span class="navbar-burger burger" data-target="navbarMenu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </div>
+                <div id="navbarMenuHeroA" class="navbar-menu">
+                    <div class="navbar-end">
+                        <a href="{{ url_for('main.index') }}" class="navbar-item">
+                            Home
+                        </a>
+                        <a href="{{ url_for('main.profile') }}" class="navbar-item">
+                            Profile
+                        </a>
+                        <a href="{{ url_for('auth.login') }}" class="navbar-item">
+                            Login
+                        </a>
+                        <a href="{{ url_for('auth.signup') }}" class="navbar-item">
+                            Sign Up
+                        </a>
+                        <a href="{{ url_for('auth.logout') }}" class="navbar-item">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="hero-body">
+        <div class="container has-text-centered">
+          <h1 class="title is-2">
+              Drop you rides below
+          </h1>
+          <body>
+            {{ dropzone.create(action='upload') }}
+            {{ dropzone.load_js() }}
+            {{ dropzone.config() }}
+          </body>
+          <p class="has-text-centered">
+              <a href="{{ url_for('main.profile') }}" class="button is-medium is-info is-outlined">
+                  Return to profile
+              </a>
+          </p>
+        </div>
+    </div>
+</section>
 </body>
 </html>
