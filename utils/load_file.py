@@ -10,7 +10,7 @@ import pandas as pd
 class Load_ride(object):
     def __init__(self, file, user_id):
         self.file = file
-        self.user_id = user_id
+        self.user_id = "ride_"+user_id
         
         self.engine = create_engine('mysql+pymysql://root:root@localhost:3306/rides', echo=False)
         self.cnx = self.engine.raw_connection()
@@ -21,12 +21,12 @@ class Load_ride(object):
         
     def check_ride_db(self):
         
-        query = """SELECT COUNT(*) FROM information_schema.tables WHERE tables='ride_%s"""%self.user_id
+        query = """SELECT COUNT(*) FROM information_schema.tables WHERE table_name='ride_%s'"""%self.user_id
         self.cursor.execute(query)
         
-        if not self.cursor.fechtone()[0] == 1:
+        if not self.cursor.fetchone()[0] == 1:
             print('Create ride table for user %s' %self.user_id)
-            query = "CREATE TABLE ride_%s (id INT AUTO_INCREMENT PRIMARY KEY, clef INT, timestamp TIMESTAMP, latitude FLOAT, longitude FLOAT, distance FLOAT, heart_rate INT, cadence INT, altitude FLOAT, power FLOAT, speed FLOAT"%self.user_id
+            query = "CREATE TABLE ride_%s (id INT AUTO_INCREMENT PRIMARY KEY, clef INT, timestamp TIMESTAMP, latitude FLOAT, longitude FLOAT, distance FLOAT, heart_rate INT, cadence INT, altitude FLOAT, power FLOAT, speed FLOAT)"%self.user_id
             self.cursor.execute(query)
             
     def load_id(self):
@@ -36,7 +36,7 @@ class Load_ride(object):
     
     def load_df(self):
         
-        self.df.to_sql(con=self.engine, name='ride_%s'%self.user_id, if_exists='append', index=False, chuncksize=10000)
+        self.df.to_sql(con=self.engine, name='ride_%s'%self.user_id, if_exists='append', index=False, chunksize=10000)
         
     def delete_file(self):
         os.remove(self.file)
