@@ -10,14 +10,17 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+from utils.load_file import Load_ride
+from utils.routine_user import Routine_user
+
+base_dir = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = 'static'
 
 db = SQLAlchemy()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 app.config['SECRET_KEY'] = b'mysupersecretkey'.hex()
-app.config['UPLOADED_PATH'] = os.path.join(basedir, 'uploads')
 app.config['DROPZONE_MAX_FILE_SIZE'] = 1024
 app.config['DROPZONE_TIMEOUT'] = 5 * 60 * 1000
 app.config['DROPZONE_ALLOWED_FILE_CUSTOM'] = True
@@ -56,7 +59,11 @@ def login_post():
 
     # if the above check passes, then we know the user has the right credentials
     login_user(check_user, remember=remember)
-    return redirect(url_for('main.profile'))
+    if Routine_user(os.path.join(base_dir, UPLOAD_FOLDER), check_user.name).after_log():
+        app.config['UPLOADED_PATH'] = os.path.join(base_dir, UPLOAD_FOLDER, check_user.name)
+        return redirect(url_for('main.profile'))
+    else:
+        return "TODO WHEN FAILED routine_user"
 
 @auth.route('/signup')
 def signup():
@@ -83,7 +90,13 @@ def signup_post():
     check_user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 
     if check_user: # if a user is found, we want to redirect back to signup page so user can try again
-        return redirect(url_for('main.profile'))
+        remenber = True if request.form.get('remenber') else False
+        if Routine_user(os.path.join(base_dir, UPLOAD_FOLDER), name).after_log():
+            app.config["UPLOADED_PATH"] = os.path.join(base_dir, UPLOAD_FOLDER, name)    
+            return redirect(url_for('main.profile'))
+        else:
+            return "TODO WHEN FAILED routine_user"
+
     else:
         return "What the fuck"
     
@@ -120,13 +133,19 @@ def index():
 @main.route('/profile')
 @login_required
 def profile():
-    return render_template('base_user.html', name=current_user.name)
+    # rides = Setup_profil(current_user.name)
+    # return render_template('base_user.html', rides=rides)
+    return render_template('base_user.html')
 
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():
     if request.method == 'POST':
         f = request.files.get('file')
         f.save(os.path.join(app.config['UPLOADED_PATH'], f.filename))
+        
+        for file in [f for f in os.listdir(app.config['UPLOADED_PATH']) if os.path.isfile(os.path.join(app.config['UPLOADED_PATH'], f))]:
+            loader = Load_ride(os.path.join(app.config["UPLOADED_PATH"], file), current_user.get_id())
+            loader.execute()
     return render_template('upload.html')
 
 
