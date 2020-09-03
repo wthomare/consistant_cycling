@@ -18,6 +18,7 @@ class Load_ride(object):
         
         # TODO Remove after dev
         self.cursor.execute('DROP TABLE IF EXISTS ride_%s' %self.user_id)
+        self.cursor.execute('DROP TABLE IF EXISTS details_%s' %self.user_id)
         
     def check_ride_db(self):
         
@@ -28,6 +29,14 @@ class Load_ride(object):
             print('Create ride table for user %s' %self.user_id)
             query = "CREATE TABLE ride_%s (id INT AUTO_INCREMENT PRIMARY KEY, clef INT, timestamp TIMESTAMP, latitude FLOAT, longitude FLOAT, distance FLOAT, heart_rate INT, cadence INT, altitude FLOAT, power FLOAT, speed FLOAT)"%self.user_id
             self.cursor.execute(query)
+
+        query = """SELECT COUNT(*) FROM information_schema.tables WHERE table_name='details_%s'"""%self.user_id
+        self.cursor.execute(query)
+        
+        if not self.cursor.fetchone()[0] == 1:
+            print('Create ride table for user %s' %self.user_id)
+            query = "CREATE TABLE details_%s (id INT AUTO_INCREMENT PRIMARY KEY, clef INT, delta INT, altitude FLOAT, distance FLOAT)"%self.user_id
+            self.cursor.execute(query)
             
     def load_id(self):
         query = "SELECT DISTINCT clef FROM ride_%s"%self.user_id
@@ -37,6 +46,9 @@ class Load_ride(object):
     def load_df(self):
         
         self.df.to_sql(con=self.engine, name='ride_%s'%self.user_id, if_exists='append', index=False, chunksize=10000)
+        
+    def load_details(self):
+        self.df_details.to_sql(con=self.engine, name='details_%s'%self.user_id, if_exists='append', index=False, chunksize=10000)
         
     def delete_file(self):
         os.remove(self.file)
@@ -50,9 +62,13 @@ class Load_ride(object):
         self.parser = ride_parser(self.file)
         self.ride_id = self.parser.ride_id
         self.df = self.parser.result
+        self.df_details = self.parser.details
         
         ID = pd.Series([self.ride_id for i in range(len(self.df['timestamp']))], index=[i for i in range(len(self.df['timestamp']))])
         self.df['clef'] = ID
+        
+        ID = [self.ride_id]
+        self.df_details['clef'] = ID
         
         # Check if the ride table for the user exist. Otherwise create it
         self.check_ride_db()
@@ -65,6 +81,7 @@ class Load_ride(object):
             return False
         else:
             self.load_df()
+            self.load_details()
         
         self.delete_file()
         return True

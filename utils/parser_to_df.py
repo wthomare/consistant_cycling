@@ -37,10 +37,11 @@ class ride_parser(object):
             _record = record.as_dict()['fields']
             df_records.append(pd.Series({'%s'%x['name'] : x['value'] for x in _record}).to_frame().transpose())
         
-        self.units = pd.Series({'%s'%x['name'] : (x['units'] if 'units' in x.keys() else None ) for x in _record}).to_frame().transpose()
+        # self.units = pd.Series({'%s'%x['name'] : (x['units'] if 'units' in x.keys() else None ) for x in _record}).to_frame().transpose()
         
         self.result = self.format_fit(pd.concat(df_records))
         self.ride_id = int(pd.Timestamp(self.result['timestamp'].iloc[0]).timestamp())
+        self.format_details()
         
     # ------------------------------------------------------------------------
     def tcx_to_df(self):
@@ -51,6 +52,15 @@ class ride_parser(object):
         df_trackpoint = pd.DataFrame([tkpt.values for tkpt in tkpts])
         self.result = self.format_tcx(df_trackpoint)
         self.ride_id = int(pd.Timestamp(handler.first_time).timestamp())
+        self.format_details()
+
+    # ------------------------------------------------------------------------
+    def format_details(self):        
+        elasped_time = (self.result['timestamp'].iloc[-1] - self.result['timestamp'].iloc[0]).seconds
+        delta_alt = self.result['altitude'].diff().clip(lower=0).sum()
+        distance = self.result['distance'].iloc[-1]
+        
+        self.details = pd.DataFrame({'delta':[elasped_time], 'altitude':[delta_alt], 'distance':[distance]})
     
     # ------------------------------------------------------------------------
     def format_fit(self, df_input):
