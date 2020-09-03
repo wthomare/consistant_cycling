@@ -12,6 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from utils.load_file import Load_ride
 from utils.routine_user import Routine_user
+from utils.cartho_gen import Cartho_gen
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = 'static'
@@ -133,9 +134,10 @@ def index():
 @main.route('/profile')
 @login_required
 def profile():
-    # rides = Setup_profil(current_user.name)
-    # return render_template('base_user.html', rides=rides)
-    return render_template('base_user.html')
+    Carto =  Cartho_gen(current_user.get_id(), current_user.name)
+    rides = Carto.list_body()
+    return render_template('base_user.html', rides=rides)
+    #return render_template('base_user.html')
 
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():

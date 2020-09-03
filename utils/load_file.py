@@ -51,6 +51,9 @@ class Load_ride(object):
         self.ride_id = self.parser.ride_id
         self.df = self.parser.result
         
+        ID = pd.Series([self.ride_id for i in range(len(self.df['timestamp']))], index=[i for i in range(len(self.df['timestamp']))])
+        self.df['clef'] = ID
+        
         # Check if the ride table for the user exist. Otherwise create it
         self.check_ride_db()
         

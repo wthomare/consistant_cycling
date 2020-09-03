@@ -5,8 +5,9 @@ from sqlalchemy import create_engine
 
 import os
 import pandas as pd
+import plotly.express as px
 
-class cartho_gen(object):
+class Cartho_gen(object):
     
     def __init__(self, user_id, user_name):
         self.user_id = "ride_"+user_id
@@ -24,13 +25,13 @@ class cartho_gen(object):
     
     def create_html(self, clef):
         
-        query = 'SELECT longitute, latitude FROM ride_%s WHERE clef=%s'%(self.user_id, clef)
+        query = 'SELECT longitude, latitude, distance FROM ride_%s WHERE clef=%s'%(self.user_id, clef)
         df_ride = pd.read_sql(query, con=self.engine)
         
         clean_lat = df_ride["latitude"].dropna()
         clean_long = df_ride["longitude"].dropna()
     
-        fig = px.line_mapbox(df, lat="latitude", lon="longitude", hover_name ='distance', center ={'lat':clean_lat.iloc[1], 'lon':clean_long.iloc[1]}, zoom=3, height=400, width =400)
+        fig = px.line_mapbox(df_ride, lat="latitude", lon="longitude", hover_name ='distance', center ={'lat':clean_lat.iloc[1], 'lon':clean_long.iloc[1]}, zoom=3, height=400, width =400)
         
         fig.update_layout(mapbox_style="open-street-map", mapbox_zoom=4, mapbox_center_lat = 41,
             margin={"r":0,"t":0,"l":0,"b":0})
@@ -51,7 +52,7 @@ class cartho_gen(object):
                 self.create_html(clef)
         
     def body_extract(self, html_file):
-        with open(html_file, 'rb') as file:
+        with open(os.path.join(self.graph_folder, html_file), 'rb') as file:
             tree = BeautifulSoup(file, 'lxml')
             body = tree.body
         return body

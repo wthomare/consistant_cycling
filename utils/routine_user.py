@@ -15,6 +15,8 @@ class Routine_user(object):
     def create_path(self):
         try:
             os.mkdir(self.user_path)
+            os.mkdir(os.path.join(self.user_path, 'graphic'))
+            
         except:
             print("Failed to create path :  [%s]" %self.user_path)
             return False
@@ -23,7 +25,8 @@ class Routine_user(object):
     
     def delete_path(self):
         os.remove(self.user_path)
-        
+        os.remove(os.path.join(self.user_path, 'graphic'))
+
     def after_log(self):
         if not self.check_path():
             return self.create_path()
