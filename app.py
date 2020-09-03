@@ -135,7 +135,7 @@ def profile():
     Carto =  Cartho_gen(current_user.get_id(), current_user.name)
     rides = Carto.list_gpx()
     details = Carto.list_details()
-    return render_template('base_user.html', rides=rides, details=details)
+    return render_template('profil.html', rides=rides, details=details)
 
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():
