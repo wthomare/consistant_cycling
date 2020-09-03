@@ -19,8 +19,15 @@ class Cartho_gen(object):
         self.cursor = self.cnx.cursor()
 
     def load_id(self):
-        query = "SELECT DISTINCT clef FROM ride_%s"%self.user_id
-        df_ride_id = pd.read_sql(query, con=self.engine)
+
+        query = """SELECT COUNT(*) FROM information_schema.tables WHERE table_name='ride_%s'"""%self.user_id
+        self.cursor.execute(query)
+        if self.cursor.fetchone()[0] == 1:
+        
+            query = "SELECT DISTINCT clef FROM ride_%s"%self.user_id
+            df_ride_id = pd.read_sql(query, con=self.engine)
+        else:
+            df_ride_id = pd.DataFrame({'clef':[]})
         return df_ride_id
     
     def create_html(self, clef):
@@ -57,7 +64,7 @@ class Cartho_gen(object):
             body = tree.body
         return body
     
-    def list_body(self):
+    def list_gpx(self):
         """
         Return the body of each graphic for a user into a list
 
@@ -65,6 +72,27 @@ class Cartho_gen(object):
         self.check_user()
         graph_list = os.listdir(self.graph_folder)
         
-        list_body = [self.body_extract(html_file) for html_file in graph_list]
+        list_body = [(int(html_file.split('_')[-1].split('.')[0]), self.body_extract(html_file)) for html_file in graph_list]
         return list_body
 
+    def list_details(self):
+        """
+        Return the details of each rode for a user into a dictionary
+        """
+        query = """SELECT COUNT(*) FROM information_schema.tables WHERE table_name='ride_%s'"""%self.user_id
+        self.cursor.execute(query)
+        if self.cursor.fetchone()[0] == 1:
+        
+            query = "SELECT DISTINCT clef, duree, altitude, distance FROM details_%s"%self.user_id
+            df_details = pd.read_sql(query, con=self.engine)
+            df_details['duree'] = pd.to_timedelta(df_details['duree'], unit='sec')
+            
+            details = {}
+            for row, column in df_details.iterrows():
+                k = int(column['clef'])
+                v = column.drop(['clef'])
+                v = v.to_frame().fillna('  ').T.to_html().replace('dataframe', 'table is-bordered')
+                details[k] = v
+        else:
+            details={}
+        return details

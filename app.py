@@ -108,8 +108,6 @@ def logout():
     return redirect(url_for('main.index'))
 
 
-
-
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
     email = db.Column(db.String(100), unique=True)
@@ -135,9 +133,9 @@ def index():
 @login_required
 def profile():
     Carto =  Cartho_gen(current_user.get_id(), current_user.name)
-    rides = Carto.list_body()
-    return render_template('base_user.html', rides=rides)
-    #return render_template('base_user.html')
+    rides = Carto.list_gpx()
+    details = Carto.list_details()
+    return render_template('base_user.html', rides=rides, details=details)
 
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():

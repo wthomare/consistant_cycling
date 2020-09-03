@@ -16,17 +16,12 @@ class Load_ride(object):
         self.cnx = self.engine.raw_connection()
         self.cursor = self.cnx.cursor()
         
-        # TODO Remove after dev
-        self.cursor.execute('DROP TABLE IF EXISTS ride_%s' %self.user_id)
-        self.cursor.execute('DROP TABLE IF EXISTS details_%s' %self.user_id)
-        
     def check_ride_db(self):
         
         query = """SELECT COUNT(*) FROM information_schema.tables WHERE table_name='ride_%s'"""%self.user_id
         self.cursor.execute(query)
         
         if not self.cursor.fetchone()[0] == 1:
-            print('Create ride table for user %s' %self.user_id)
             query = "CREATE TABLE ride_%s (id INT AUTO_INCREMENT PRIMARY KEY, clef INT, timestamp TIMESTAMP, latitude FLOAT, longitude FLOAT, distance FLOAT, heart_rate INT, cadence INT, altitude FLOAT, power FLOAT, speed FLOAT)"%self.user_id
             self.cursor.execute(query)
 
@@ -34,13 +29,20 @@ class Load_ride(object):
         self.cursor.execute(query)
         
         if not self.cursor.fetchone()[0] == 1:
-            print('Create ride table for user %s' %self.user_id)
-            query = "CREATE TABLE details_%s (id INT AUTO_INCREMENT PRIMARY KEY, clef INT, delta INT, altitude FLOAT, distance FLOAT)"%self.user_id
+            query = "CREATE TABLE details_%s (id INT AUTO_INCREMENT PRIMARY KEY, clef INT, duree INT, altitude FLOAT, distance FLOAT)"%self.user_id
             self.cursor.execute(query)
             
     def load_id(self):
-        query = "SELECT DISTINCT clef FROM ride_%s"%self.user_id
-        df_ride_id = pd.read_sql(query, con=self.engine)
+        
+        query = """SELECT COUNT(*) FROM information_schema.tables WHERE table_name='ride_%s'"""%self.user_id
+        self.cursor.execute(query)
+
+        if self.cursor.fetchone()[0] == 1:
+            query = "SELECT DISTINCT clef FROM ride_%s"%self.user_id
+            df_ride_id = pd.read_sql(query, con=self.engine)
+        else:
+            df_ride_id = pd.DataFrame({'clef':[]})
+        
         return df_ride_id
     
     def load_df(self):

@@ -60,7 +60,7 @@ class ride_parser(object):
         delta_alt = self.result['altitude'].diff().clip(lower=0).sum()
         distance = self.result['distance'].iloc[-1]
         
-        self.details = pd.DataFrame({'delta':[elasped_time], 'altitude':[delta_alt], 'distance':[distance]})
+        self.details = pd.DataFrame({'duree':[elasped_time], 'altitude':[delta_alt], 'distance':[distance]})
     
     # ------------------------------------------------------------------------
     def format_fit(self, df_input):

@@ -61,7 +61,7 @@
                 </div>
             </nav>
         </div>
-        {% for graph in rides %}
+        {% for clef, graph in rides %}
         <div class="hero-body">
             <div class="container has-text-centered">
                 <div class="columns is-vcentered">
@@ -70,10 +70,14 @@
 
                     <div class="column is-6 is-offset-1">
                         <h1 class="title is-2">
-                            Superhero Scaffolding
+                            Find a name for this ride ...
                         </h1>
                         <h2 class="subtitle is-4">
-                            Let this cover page describe a product or service.
+                            {% for key, value in details.items() %}
+                              {% if key == clef %}
+                                {{value|safe}}
+                              {% endif %}
+                            {% endfor %}
                         </h2>
                         <br>
                         <p class="has-text-centered">
