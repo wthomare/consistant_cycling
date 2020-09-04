@@ -83,9 +83,9 @@ class Cartho_gen(object):
         self.cursor.execute(query)
         if self.cursor.fetchone()[0] == 1:
         
-            query = "SELECT DISTINCT clef, duree, altitude, distance FROM details_%s"%self.user_id
+            query = "SELECT DISTINCT clef, activity, calories, duree, max_speed, distance, avg_bpm, max_bpm, intensity, Method FROM details_%s"%self.user_id
             df_details = pd.read_sql(query, con=self.engine)
-            df_details['duree'] = pd.to_timedelta(df_details['duree'], unit='sec')
+            df_details['duree'].iloc[0] = pd.to_timedelta(df_details['duree'].iloc[0], unit='ns')
             
             details = {}
             for row, column in df_details.iterrows():

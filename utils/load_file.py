@@ -29,7 +29,7 @@ class Load_ride(object):
         self.cursor.execute(query)
         
         if not self.cursor.fetchone()[0] == 1:
-            query = "CREATE TABLE details_%s (id INT AUTO_INCREMENT PRIMARY KEY, clef INT, duree INT, altitude FLOAT, distance FLOAT)"%self.user_id
+            query = "CREATE TABLE details_%s (id INT AUTO_INCREMENT PRIMARY KEY, clef INT, activity VARCHAR(255), calories FLOAT, duree FLOAT, max_speed FLOAT, distance FLOAT, avg_bpm FLOAT, max_bpm FLOAT, intensity VARCHAR(255), Method VARCHAR(255))"%self.user_id
             self.cursor.execute(query)
             
     def load_id(self):

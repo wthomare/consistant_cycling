@@ -6,6 +6,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
+from utils.tcx_header_handler import tcx_header_handler
+
 fit_file = "files//Sous_Force.fit"
 tcx_file = "files//Afternoon_Ride.tcx"
 
@@ -52,15 +54,14 @@ class ride_parser(object):
         df_trackpoint = pd.DataFrame([tkpt.values for tkpt in tkpts])
         self.result = self.format_tcx(df_trackpoint)
         self.ride_id = int(pd.Timestamp(handler.first_time).timestamp())
-        self.format_details()
+        self.format_details_tcx()
 
     # ------------------------------------------------------------------------
-    def format_details(self):        
-        elasped_time = (self.result['timestamp'].iloc[-1] - self.result['timestamp'].iloc[0]).seconds
-        delta_alt = self.result['altitude'].diff().clip(lower=0).sum()
-        distance = self.result['distance'].iloc[-1]
+    def format_details_tcx(self):        
+        handler = tcx_header_handler()
+        parse = handler.parse(self.path)
         
-        self.details = pd.DataFrame({'duree':[elasped_time], 'altitude':[delta_alt], 'distance':[distance]})
+        self.details = handler.get_frame()
     
     # ------------------------------------------------------------------------
     def format_fit(self, df_input):
