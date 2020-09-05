@@ -7,17 +7,16 @@
 
            {{graph|safe}}
 
-            <div class="column is-6 is-offset-1">
+            <div class="column is-2 is-offset-1">
                 <h1 class="title is-2">
                     Find a name for this ride ...
                 </h1>
-                <h2 class="subtitle is-4">
+                <br>
                     {% for key, value in details.items() %}
                       {% if key == clef %}
                         {{value|safe}}
                       {% endif %}
                     {% endfor %}
-                </h2>
                 <br>
                 <p class="has-text-centered">
                     <a class="button is-medium is-info is-outlined">

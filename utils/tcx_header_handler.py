@@ -29,12 +29,12 @@ class tcx_header_handler(object):
     def get_frame(self):
         
         df = pd.DataFrame({'activity' : [self.activity],
-                           'calories' : [self.calories],
+                           'calories' : [int(self.calories)],
                            'duree' : [self.elasped_time],
-                           'max_speed' : [self.MaxVelocity],
-                           'distance' : [self.distance],
-                           'avg_bpm' : [self.AvgHR],
-                           'max_bpm' : [self.MaxHR],
+                           'max_speed' : [round(self.MaxVelocity, 1)],
+                           'distance' : [round(self.distance/1000,1)],
+                           'avg_bpm' : [int(self.AvgHR)],
+                           'max_bpm' : [int(self.MaxHR)],
                            'intensity' : [self.intensity],
                            'Method' : [self.TrigMethod]})
         
