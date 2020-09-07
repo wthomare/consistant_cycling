@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Sep  5 16:13:56 2020
-
-@author: wilfr
-"""
-
 
 import csv
 import codecs
@@ -38,18 +32,18 @@ class Weather_handler(object):
     def get_key(self):
         
         if not self.key:
-            with open('files/openweatherdata_key.txt', 'rb') as key_file:
-                self.key = key_file.read().decode('utf8')
+            with open('files/openweatherdata_key.txt', 'r') as key_file:
+                self.key = key_file.read()
             
     # ------------------------------------------------------------------------
     def set_request(self, startDate, endDate, startHour, endHour, lat, lon):
         
         self.get_key()
-        self.URL = self.startDateString + startDate + self.UTC \
-                    + self.endDateString + endDate + self.UTC \
-                    + self.startTimeString + startHour + self.endTimeString \
-                    + endHour + self.keyString + self.key + self.locationString \
-                    + lat + self.inter_lat_lon + lon
+        self.URL = self.startDateString + str(startDate) + self.UTC \
+                    + self.endDateString + str(endDate) + self.UTC \
+                    + self.startTimeString + str(startHour) + self.endTimeString \
+                    + str(endHour) + self.keyString + self.key + self.locationString \
+                    + str(lat) + self.inter_lat_lon + str(lon)
     
     # ------------------------------------------------------------------------
     def get_data(self):

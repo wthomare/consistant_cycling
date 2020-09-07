@@ -7,6 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from utils.tcx_header_handler import tcx_header_handler
+from utils.fit_parser import Fit_parser
 
 fit_file = "files//Sous_Force.fit"
 tcx_file = "files//Afternoon_Ride.tcx"
@@ -33,23 +34,21 @@ class ride_parser(object):
         
     # ------------------------------------------------------------------------
     def fit_to_df(self):
-        self.parser = (self.file_extension, fitparse.FitFile(self.path))
-        df_records = []
-        for record in self.parser[1].get_messages('record'):
-            _record = record.as_dict()['fields']
-            df_records.append(pd.Series({'%s'%x['name'] : x['value'] for x in _record}).to_frame().transpose())
+
+        self.handler = Fit_parser()
+        self.handler.parse(self.path)
         
-        # self.units = pd.Series({'%s'%x['name'] : (x['units'] if 'units' in x.keys() else None ) for x in _record}).to_frame().transpose()
+        df_records = self.handler.fit_to_df()
         
-        self.result = self.format_fit(pd.concat(df_records))
+        self.result = self.format_fit(df_records)
         self.ride_id = int(pd.Timestamp(self.result['timestamp'].iloc[0]).timestamp())
-        self.format_details()
+        self.format_details_fit()
         
     # ------------------------------------------------------------------------
     def tcx_to_df(self):
-        handler = ggps.TcxHandler()
-        handler.parse(self.path)
-        tkpts = handler.trackpoints
+        self.handler = ggps.TcxHandler()
+        self.handler.parse(self.path)
+        tkpts = self.handler.trackpoints
         
         df_trackpoint = pd.DataFrame([tkpt.values for tkpt in tkpts])
         self.result = self.format_tcx(df_trackpoint)
@@ -62,6 +61,10 @@ class ride_parser(object):
         parse = handler.parse(self.path)
         
         self.details = handler.get_frame()
+
+    # ------------------------------------------------------------------------
+    def format_details_fit(self):        
+        self.details = self.handler.format_details_fit()
     
     # ------------------------------------------------------------------------
     def format_fit(self, df_input):
@@ -101,8 +104,8 @@ class ride_parser(object):
         
 if __name__ == '__main__':
 
-    #parser = ride_parser(fit_file)
-    parser = ride_parser(tcx_file)
+    parser = ride_parser(fit_file)
+    #parser = ride_parser(tcx_file)
     
     df = parser.result
     
