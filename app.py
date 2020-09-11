@@ -137,6 +137,14 @@ def profile():
     details = Carto.list_details()
     return render_template('profil.html', rides=rides, details=details)
 
+@main.route('/profile', methods=['POST'])
+@login_required
+def profile_post():
+    clef = request.form['clef']
+    graph = request.form['graph']
+    
+    return render_template("ride_detail.html", clef=clef, graph=graph)
+
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():
     if request.method == 'POST':

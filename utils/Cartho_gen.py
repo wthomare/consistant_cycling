@@ -91,7 +91,6 @@ class Cartho_gen(object):
             for row, column in df_details.iterrows():
                 k = int(column['clef'])
                 v = column.drop(['clef'])
-                print(v)
                 v = v.to_frame().fillna('  ').T.to_html().replace('dataframe', 'table is-bordered').replace('table border="1"', 'table border="1"')
                 details[k] = v
         else:
