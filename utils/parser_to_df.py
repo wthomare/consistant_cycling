@@ -52,7 +52,7 @@ class ride_parser(object):
         
         df_trackpoint = pd.DataFrame([tkpt.values for tkpt in tkpts])
         self.result = self.format_tcx(df_trackpoint)
-        self.ride_id = int(pd.Timestamp(handler.first_time).timestamp())
+        self.ride_id = int(pd.Timestamp(self.handler.first_time).timestamp())
         self.format_details_tcx()
 
     # ------------------------------------------------------------------------

@@ -7,7 +7,7 @@
 
            {{graph|safe}}
 
-            <div class="column is-2 is-offset-1">
+            <div class="column is-6 is-offset-1">
                 <h1 class="title is-2">
                     Find a name for this ride ...
                 </h1>
@@ -19,9 +19,11 @@
                     {% endfor %}
                 <br>
                 <p class="has-text-centered">
-                    <a class="button is-medium is-info is-outlined">
-                        Learn more
-                    </a>
+                  <form action="/profile" method="POST">
+                    <input type="hidden" id="clef" name="clef" value="{{clef}}">
+                    <input type="hidden" id="graph" name="graph" value="{{graph}}">
+                    <button class="button button is-medium is-info is-outlined">Ride Details </button>
+                  </form>
                 </p>
             </div>
         </div>
