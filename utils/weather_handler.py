@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import csv
 import codecs
+import datetime
 import urllib.request
 
 import pandas as pd
@@ -32,7 +32,7 @@ class Weather_handler(object):
     def get_key(self):
         
         if not self.key:
-            with open('files/openweatherdata_key.txt', 'r') as key_file:
+            with open('utils/files/openweatherdata_key.txt', 'r') as key_file:
                 self.key = key_file.read()
             
     # ------------------------------------------------------------------------
@@ -48,20 +48,51 @@ class Weather_handler(object):
     # ------------------------------------------------------------------------
     def get_data(self):
         CSVBytes = urllib.request.urlopen(self.URL)
-        CSVText = csv.reader(codecs.iterdecode(CSVBytes, 'utf-8'))
-        
-        df = pd.read_csv(StringIO(CSVBytes.read().decode('utf8')))
-        return df
 
+        self.df = pd.read_csv(StringIO(CSVBytes.read().decode('utf8')))        
+    
+    # ------------------------------------------------------------------------
+    def format_data(self):
+        self.df = self.df[['Name', 'Date time', 'Temperature', 'Precipitation', 'Snow Depth', 'Wind Speed', 'Cloud Cover',
+       'Relative Humidity',  'Conditions']]
+        
+        
+        self.df = self.df.rename(columns={'Date time': 'Date_time'})
+        
+        self.df['Date_time'] = self.df['Date_time'].apply(lambda x : pd.Timestamp(x))
+        
+    
+    # ------------------------------------------------------------------------
+    def execute(self, df_input):
+        # TODO : Ne pas utilisé la valeur moyenne de long et lat mais trouver celle de chaque heur et faire un requête ainsi
+        
+        date = df_input['timestamp'].dt.strftime('%Y-%m-%d')
+        hour = df_input['timestamp'].dt.strftime('%H')
+        
+        startDate = date.iloc[0]
+        endDate = date.iloc[-1]
+        startHour = hour.iloc[0]
+        endHour = hour.iloc[-1]
+        
+        lat = str(df_input['latitude'].mean())
+        lon = str(df_input['longitude'].mean())
+        
+        self.set_request(startDate, endDate, startHour, endHour, lat, lon) 
+        self.get_data()
+        self.format_data()
+        return self.df
+        
+        
 if __name__=='__main__':
 
     handler = Weather_handler()
-    handler.set_request(startDate ='2020-09-03',
-                        endDate   = '2020-09-05',
-                        startHour = "10",
-                        endHour   = "16",
+    handler.set_request(startDate ='2020-09-10',
+                        endDate   = '2020-09-13',
+                        startHour = "01",
+                        endHour   = "05",
                         lat       = '47.218371',
                         lon       = '-1.553621')
     
-    df_test = handler.get_data()
-
+    handler.get_data()
+    handler.format_data()
+    df_test = handler.df

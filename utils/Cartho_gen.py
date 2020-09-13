@@ -9,6 +9,7 @@ import plotly.express as px
 
 class Cartho_gen(object):
     
+    # ------------------------------------------------------------------------
     def __init__(self, user_id, user_name):
         self.user_id = "ride_"+user_id
         self.user_name = user_name
@@ -18,6 +19,7 @@ class Cartho_gen(object):
         self.cnx = self.engine.raw_connection()
         self.cursor = self.cnx.cursor()
 
+    # ------------------------------------------------------------------------
     def load_id(self):
 
         query = """SELECT COUNT(*) FROM information_schema.tables WHERE table_name='ride_%s'"""%self.user_id
@@ -30,6 +32,7 @@ class Cartho_gen(object):
             df_ride_id = pd.DataFrame({'clef':[]})
         return df_ride_id
     
+    # ------------------------------------------------------------------------
     def create_html(self, clef):
         
         query = 'SELECT longitude, latitude, distance FROM ride_%s WHERE clef=%s'%(self.user_id, clef)
@@ -46,6 +49,7 @@ class Cartho_gen(object):
         fig.write_html(os.path.join(self.graph_folder, "%s_%s.html"%(self.user_id, clef)), include_plotlyjs='cdn')
                  
             
+    # ------------------------------------------------------------------------
     def check_user(self):
         """
         Check if all rides have equivalent graphic otherwise create it
@@ -58,12 +62,14 @@ class Cartho_gen(object):
             if not "%s_%s.html"%(self.user_id, clef) in graph_list:
                 self.create_html(clef)
         
+    # ------------------------------------------------------------------------
     def body_extract(self, html_file):
         with open(os.path.join(self.graph_folder, html_file), 'rb') as file:
             tree = BeautifulSoup(file, 'lxml')
             body = tree.body
         return body
     
+    # ------------------------------------------------------------------------
     def list_gpx(self):
         """
         Return the body of each graphic for a user into a list
@@ -75,15 +81,16 @@ class Cartho_gen(object):
         list_body = [(int(html_file.split('_')[-1].split('.')[0]), self.body_extract(html_file)) for html_file in graph_list]
         return list_body
 
+    # ------------------------------------------------------------------------
     def list_details(self):
         """
-        Return the details of each rode for a user into a dictionary
+        Return the details of each ride for a user into a dictionary
         """
         query = """SELECT COUNT(*) FROM information_schema.tables WHERE table_name='ride_%s'"""%self.user_id
         self.cursor.execute(query)
         if self.cursor.fetchone()[0] == 1:
         
-            query = "SELECT DISTINCT clef, calories, duree, max_speed, distance, avg_bpm, max_bpm FROM details_%s"%self.user_id
+            query = "SELECT DISTINCT * FROM details_%s"%self.user_id
             df_details = pd.read_sql(query, con=self.engine)
             df_details['duree'].iloc[0] = pd.to_timedelta(df_details['duree'].iloc[0], unit='ns')
             

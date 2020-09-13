@@ -7,5 +7,56 @@
     Ride Details
   </h1>
   {{graph|safe}}
+
 </div>
+
+
+<div class="row">
+    <div class="col-md-6">
+        <h4>Location: {{ weather_data['Name'][0] }}</h4>
+    </div>
+</div>
+
+{% for i in range(weather_data['Date_time']|length) %}
+<div class="row">
+    <div class="col-md-6">
+            <div class="well">
+            <div class="row">
+                <div class="col-xs-9">
+                <b>Date:</b> {{ weather_data['Date_time'][i] }}<br/>
+                <b>Temperature:</b> {{ weather_data['Temperature'][i] }}<br/>
+                <b>Summary:</b> {{ weather_data['Conditions'][i] }}<br/>
+                <b>Precipitation:</b> {{weather_data['Precipitation'][i] }}<br/>
+                <b>Cloud Cover:</b> {{weather_data['Cloud Cover'][i] }}<br/>
+                <b>Wind Speed:</b> {{weather_data['Wind Speed'][i] }}<br/>
+                </div>
+                <div class="col-xs-3"> <h1>
+                {% if weather_data['Conditions'][i] == "Clear" %}
+                    <i class="wi wi-day-sunny"></i>
+                {% elif weather_data['Conditions'][i] == "clear-night" %}
+                    <i class="wi wi-night-clear"></i>
+                {% elif weather_data['Conditions'][i] == "rain" %}
+                    <i class="wi wi-rain"></i>
+                {% elif weather_data['Conditions'][i] == "snow" %}
+                    <i class="wi wi-snow"></i>
+                {% elif weather_data['Conditions'][i] == "sleet" %}
+                    <i class="wi wi-sleet"></i>
+                {% elif weather_data['Conditions'][i] == "Windy" %}
+                    <i class="wi wi-windy"></i>
+                {% elif weather_data['Conditions'][i] == "Fog" %}
+                    <i class="wi wi-fog"></i>
+                {% elif weather_data['Conditions'][i] == "Overcast" %}
+                    <i class="wi wi-cloudy"></i>
+                {% elif weather_data['Conditions'][i] == "Partially cloudy" %}
+                    <i class="wi wi-day-cloudy"></i>
+                {% endif %} </h1>
+                </div>
+            </div>
+            </div>
+    </div>
+</div>
+{% endfor %}
+
+
+
 {% endblock %}

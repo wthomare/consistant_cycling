@@ -13,6 +13,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from utils.load_file import Load_ride
 from utils.routine_user import Routine_user
 from utils.cartho_gen import Cartho_gen
+from utils.meteo_gen import Meteo_gen
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = 'static'
@@ -143,7 +144,10 @@ def profile_post():
     clef = request.form['clef']
     graph = request.form['graph']
     
-    return render_template("ride_detail.html", clef=clef, graph=graph)
+    meteo = Meteo_gen(current_user.get_id(), clef)
+    weather_data = meteo.extract_ride() 
+    
+    return render_template("ride_detail.html", clef=clef, graph=graph, weather_data=weather_data)
 
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():
