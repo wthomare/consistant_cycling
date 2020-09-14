@@ -7,39 +7,36 @@
     Ride Details
   </h1>
   {{graph|safe}}
-
 </div>
 
+<div class='container'>
+  <div class="columns">
+    <div class="column">
+      <p class="bd-notification is-info">
+          Location : {{weather_data['Name'][0]}}
+      </p>
 
-<div class="row">
-    <div class="col-md-6">
-        <h4>Location: {{ weather_data['Name'][0] }}</h4>
-    </div>
-</div>
-
-{% for i in range(weather_data['Date_time']|length) %}
-<div class="row">
-    <div class="col-md-6">
-            <div class="well">
-            <div class="row">
-                <div class="col-xs-9">
+    <div class="columns is-gapless is-mobile">
+    {% for i in range(weather_data['Date_time']|length) %}
+      <div class="columns is-vcentered is-three-quarters-mobile is-two-thirds-tablet is-half-desktop is-one-third-widescreen is-one-quarter-fullhd">
+              <div class="column is-three-quarter">
                 <b>Date:</b> {{ weather_data['Date_time'][i] }}<br/>
                 <b>Temperature:</b> {{ weather_data['Temperature'][i] }}<br/>
                 <b>Summary:</b> {{ weather_data['Conditions'][i] }}<br/>
                 <b>Precipitation:</b> {{weather_data['Precipitation'][i] }}<br/>
                 <b>Cloud Cover:</b> {{weather_data['Cloud Cover'][i] }}<br/>
                 <b>Wind Speed:</b> {{weather_data['Wind Speed'][i] }}<br/>
-                </div>
-                <div class="col-xs-3"> <h1>
+              </div>
+              <div class="column is-one-quarter">
                 {% if weather_data['Conditions'][i] == "Clear" %}
                     <i class="wi wi-day-sunny"></i>
-                {% elif weather_data['Conditions'][i] == "clear-night" %}
+                {% elif weather_data['Conditions'][i] == "Clear-night" %}
                     <i class="wi wi-night-clear"></i>
-                {% elif weather_data['Conditions'][i] == "rain" %}
+                {% elif weather_data['Conditions'][i] == "Rain" %}
                     <i class="wi wi-rain"></i>
-                {% elif weather_data['Conditions'][i] == "snow" %}
+                {% elif weather_data['Conditions'][i] == "Snow" %}
                     <i class="wi wi-snow"></i>
-                {% elif weather_data['Conditions'][i] == "sleet" %}
+                {% elif weather_data['Conditions'][i] == "Sleet" %}
                     <i class="wi wi-sleet"></i>
                 {% elif weather_data['Conditions'][i] == "Windy" %}
                     <i class="wi wi-windy"></i>
@@ -49,14 +46,14 @@
                     <i class="wi wi-cloudy"></i>
                 {% elif weather_data['Conditions'][i] == "Partially cloudy" %}
                     <i class="wi wi-day-cloudy"></i>
-                {% endif %} </h1>
-                </div>
-            </div>
-            </div>
+                {% endif %}
+              </div>
+      </div>
+      {% endfor %}
     </div>
+  </div>
+  </div>
 </div>
-{% endfor %}
-
 
 
 {% endblock %}

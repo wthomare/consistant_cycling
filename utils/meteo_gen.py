@@ -62,7 +62,5 @@ class Meteo_gen(object):
             place = self.geolocator.reverse(df_details['Name'].iloc[0]).address
             
             df_details['Name'] = df_details['Name'].apply(lambda x : place)
-            
-            print(df_details.head())
-            
+                        
             return df_details.to_dict()
