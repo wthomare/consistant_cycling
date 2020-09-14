@@ -12,14 +12,19 @@ class GPX_creator(object):
     """
     Take a ride in a ride table and create a gpx file 
     """
+    # ------------------------------------------------------------------------
     def __init__(self):
         self.gpx = gpxpy.gpx.GPX()
+        self.gpx_track = gpxpy.gpx.GPXTrack()
+        self.gpx.tracks.append(self.gpx_track)
+
         self.gpx.name = ''
         self.gpx.description = ''
         
         self.namespace = '{opencpn}'
     
     
+    # ------------------------------------------------------------------------
     def set_header(self):
         self.root = mod_etree.Element(self.namespace + 'scale_min_max')
         #mod_etree.SubElement(root, namespace + 'UseScale')
@@ -33,23 +38,23 @@ class GPX_creator(object):
         nsmap = {self.namespace[1:-1]:'http://www.opencpn.org'}
         self.gpx.nsmap =nsmap
     
-    def set_trackpoints(self, lat, long):
-        
-        for i in range(len(lat)):
-        
-            gpx_wps = gpxpy.gpx.GPXWaypoint()
-            gpx_wps.latitude = lat[0]
-            gpx_wps.longitude = long[1]
-            gpx_wps.symbol = "Marks-Mooring-Float"
-            gpx_wps.name = ""
-            gpx_wps.description = ""
-            #add the extension to the waypoint
-            gpx_wps.extensions.append(self.root)
-            self.gpx.waypoints.append(gpx_wps)
+    # ------------------------------------------------------------------------
+    def set_trackpoints(self, df):
+        gpx_segment = gpxpy.gpx.GPXTrackSegment()
+        self.gpx_track.segments.append(gpx_segment)
+        for i in range(len(df)):
+            gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(df['latitude'].iloc[i], df['longitude'].iloc[i], df['altitude'].iloc[i]))
             
             
+    # ------------------------------------------------------------------------
     def to_gpx(self):
-        return self.gpx.to_xml()
+        self.xml_string = self.gpx.to_xml()
+    
+    # ------------------------------------------------------------------------
+    def save_bpx(self, path):
+        assert(path[-3:]=='gpx')
+        with open(path, 'w') as xml_file:
+            xml_file.write(self.xml_string)
     
 if __name__== '__main__' :
     
@@ -63,7 +68,8 @@ if __name__== '__main__' :
     df = pd.read_sql(query, con=engine).dropna(axis=0)
 
     gpx_handler = GPX_creator()
-    gpx_handler.set_header()
+    # gpx_handler.set_header()
     
-    gpx_handler.set_trackpoints(lat= df['latitude'].to_list(), long = df['longitude'].to_list())
-    gpx_file = gpx_handler.to_gpx()
+    gpx_handler.set_trackpoints(df)
+    gpx_handler.to_gpx()
+    gpx_handler.save_bpx('test.gpx')
