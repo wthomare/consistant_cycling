@@ -143,11 +143,14 @@ def profile():
 def profile_post():
     clef = request.form['clef']
     graph = request.form['graph']
+    graph_2d = request.form['graph_2d']
+    
+    graph = graph.replace('"width": 400', '"width": 1200')
     
     meteo = Meteo_gen(current_user.get_id(), clef)
     weather_data = meteo.extract_ride() 
     
-    return render_template("ride_detail.html", clef=clef, graph=graph, weather_data=weather_data)
+    return render_template("ride_detail.html", clef=clef, graph=graph, weather_data=weather_data, graph_2d=graph_2d)
 
 @app.route("/upload", methods=['POST', 'GET'])
 def upload():

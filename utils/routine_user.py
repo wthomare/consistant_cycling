@@ -4,18 +4,22 @@ import os
 
 class Routine_user(object):
     
+    # ------------------------------------------------------------------------
     def __init__(self, upload, name):
         self.user_path = os.path.join(upload, name)
     
+    # ------------------------------------------------------------------------
     def check_path(self):
         if not os.path.isdir(self.user_path):
             return False
         return True
     
+    # ------------------------------------------------------------------------
     def create_path(self):
         try:
             os.mkdir(self.user_path)
             os.mkdir(os.path.join(self.user_path, 'graphic'))
+            os.mkdir(os.path.join(self.user_path, 'graphic_2d'))
             
         except:
             print("Failed to create path :  [%s]" %self.user_path)
@@ -23,10 +27,13 @@ class Routine_user(object):
         else:
             return True
     
+    # ------------------------------------------------------------------------
     def delete_path(self):
         os.remove(self.user_path)
         os.remove(os.path.join(self.user_path, 'graphic'))
+        os.remove(os.path.join(self.user_path, 'graphic_2d'))
 
+    # ------------------------------------------------------------------------
     def after_log(self):
         if not self.check_path():
             return self.create_path()

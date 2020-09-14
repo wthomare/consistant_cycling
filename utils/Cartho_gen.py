@@ -7,6 +7,7 @@ import os
 import pandas as pd
 import plotly.express as px
 
+
 class Cartho_gen(object):
     
     # ------------------------------------------------------------------------
@@ -14,10 +15,13 @@ class Cartho_gen(object):
         self.user_id = "ride_"+user_id
         self.user_name = user_name
         self.graph_folder = os.path.join('static', self.user_name, 'graphic')
+        self.graph_2d = os.path.join('static', self.user_name, 'graphic_2d')
 
         self.engine = create_engine('mysql+pymysql://root:root@localhost:3306/rides', echo=False)
         self.cnx = self.engine.raw_connection()
         self.cursor = self.cnx.cursor()
+        
+        self.original_data = None
 
     # ------------------------------------------------------------------------
     def load_id(self):
@@ -33,21 +37,34 @@ class Cartho_gen(object):
         return df_ride_id
     
     # ------------------------------------------------------------------------
-    def create_html(self, clef):
-        
-        query = 'SELECT longitude, latitude, distance FROM ride_%s WHERE clef=%s'%(self.user_id, clef)
-        df_ride = pd.read_sql(query, con=self.engine)
-        
-        clean_lat = df_ride["latitude"].dropna()
-        clean_long = df_ride["longitude"].dropna()
+    def extract_ride(self, clef):
+        query = 'SELECT altitude, longitude, latitude, distance FROM ride_%s WHERE clef=%s'%(self.user_id, clef)
+        self.original_data = pd.read_sql(query, con=self.engine)       
     
-        fig = px.line_mapbox(df_ride, lat="latitude", lon="longitude", hover_name ='distance', center ={'lat':clean_lat.iloc[1], 'lon':clean_long.iloc[1]}, zoom=3, height=400, width =400)
+    # ------------------------------------------------------------------------
+    def create_html(self, clef):
+        if self.original_data is None:
+            self.extract_ride(clef)
         
-        fig.update_layout(mapbox_style="open-street-map", mapbox_zoom=4, mapbox_center_lat = 41,
+        clean_lat = self.original_data["latitude"].dropna()
+        clean_long = self.original_data["longitude"].dropna()
+    
+        fig = px.line_mapbox(self.original_data, lat="latitude", lon="longitude", hover_name ='distance', center ={'lat':clean_lat.iloc[1], 'lon':clean_long.iloc[1]}, zoom=3, height=400, width =400)
+        
+        fig.update_layout(mapbox_style="open-street-map", mapbox_zoom=4,
             margin={"r":0,"t":0,"l":0,"b":0})
         
         fig.write_html(os.path.join(self.graph_folder, "%s_%s.html"%(self.user_id, clef)), include_plotlyjs='cdn')
-                 
+        
+    # ------------------------------------------------------------------------
+    def create_elevation_html(self, clef):
+        if self.original_data is None:
+            self.extract_ride(clef)
+        
+        fig = px.area(self.original_data, x="distance", y="altitude", height=200, width =1200, labels={'distance':'km', 'altitude':'m'}, color_discrete_sequence=['grey'])
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        fig.write_html(os.path.join(self.graph_2d, "%s_%s.html"%(self.user_id, clef)), include_plotlyjs='cdn')
+        
             
     # ------------------------------------------------------------------------
     def check_user(self):
@@ -61,10 +78,11 @@ class Cartho_gen(object):
         for clef in existing_ride['clef'].values:
             if not "%s_%s.html"%(self.user_id, clef) in graph_list:
                 self.create_html(clef)
+                self.create_elevation_html(clef)
         
     # ------------------------------------------------------------------------
-    def body_extract(self, html_file):
-        with open(os.path.join(self.graph_folder, html_file), 'rb') as file:
+    def body_extract(self, path, html_file):
+        with open(os.path.join(os.path.join(path, html_file)), 'rb') as file:
             tree = BeautifulSoup(file, 'lxml')
             body = tree.body
         return body
@@ -77,8 +95,10 @@ class Cartho_gen(object):
         """
         self.check_user()
         graph_list = os.listdir(self.graph_folder)
+        graph_2d_list = os.listdir(self.graph_2d)
+
+        list_body = [(int(graph_list[i].split('_')[-1].split('.')[0]), self.body_extract(self.graph_folder, graph_list[i]), self.body_extract(self.graph_2d, graph_2d_list[i])) for i in range(len(graph_list))]
         
-        list_body = [(int(html_file.split('_')[-1].split('.')[0]), self.body_extract(html_file)) for html_file in graph_list]
         return list_body
 
     # ------------------------------------------------------------------------

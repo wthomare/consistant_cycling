@@ -1,12 +1,11 @@
 {% extends "base_user.html" %}
 
 {% block content %}
-{% for clef, graph in rides %}
+{% for clef, graph, graph_2d in rides %}
     <div class="container has-text-centered">
         <div class="columns is-vcentered">
 
            {{graph|safe}}
-
             <div class="column is-6 is-offset-1">
                 <h1 class="title is-2">
                     Find a name for this ride ...
@@ -22,6 +21,7 @@
                   <form action="/profile" method="POST">
                     <input type="hidden" id="clef" name="clef" value="{{clef}}">
                     <input type="hidden" id="graph" name="graph" value="{{graph}}">
+                    <input type="hidden" id="graph_2d" name="graph_2d" value="{{graph_2d}}">
                     <button class="button button is-medium is-info is-outlined">Ride Details </button>
                   </form>
                 </p>
