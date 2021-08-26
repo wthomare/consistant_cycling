@@ -2,7 +2,7 @@
 
 import os
 
-from flask import Flask
+from flask import Flask, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin
 from flask_dropzone import Dropzone
@@ -14,6 +14,8 @@ from utils.load_file import Load_ride
 from utils.routine_user import Routine_user
 from utils.cartho_gen import Cartho_gen
 from utils.meteo_gen import Meteo_gen
+
+from datetime import timedelta
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = 'static'
@@ -32,12 +34,17 @@ db.init_app(app)
 
 dropzone = Dropzone(app)
 
-
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.init_app(app)
+login_manager.refresh_view = 'auth.relogin'
+login_manager.needs_refresh_message = (u"Session timedout, please re-login")
+login_manager.needs_refresh_message_category = "info"
 
-
+@app.before_request
+def before_request():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(minutes=10)
 
 auth = Blueprint('auth', __name__)
 
@@ -65,7 +72,7 @@ def login_post():
         app.config['UPLOADED_PATH'] = os.path.join(base_dir, UPLOAD_FOLDER, check_user.name)
         return redirect(url_for('main.profile'))
     else:
-        return "TODO WHEN FAILED routine_user"
+        return redirect(url_for('sign_error.html'))
 
 @auth.route('/signup')
 def signup():
@@ -97,7 +104,7 @@ def signup_post():
             app.config["UPLOADED_PATH"] = os.path.join(base_dir, UPLOAD_FOLDER, name)    
             return redirect(url_for('main.profile'))
         else:
-            return "TODO WHEN FAILED routine_user"
+            return redirect(url_for('sign_error.html'))
 
     else:
         return "What the fuck"
