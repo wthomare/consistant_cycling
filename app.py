@@ -5,10 +5,15 @@ import os
 from flask import Flask, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin
+from flask_mail import Mail, Message
 from flask_dropzone import Dropzone
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from .forms import EmailForm, PassworForm
+from datetime import timedelta
+from itsdangerous import URLSafeTimedSerializer
 
 from utils.load_file import Load_ride
 from utils.routine_user import Routine_user
@@ -29,17 +34,26 @@ app.config['DROPZONE_MAX_FILE_SIZE'] = 1024
 app.config['DROPZONE_TIMEOUT'] = 5 * 60 * 1000
 app.config['DROPZONE_ALLOWED_FILE_CUSTOM'] = True
 app.config['DROPZONE_ALLOWED_FILE_TYPE'] = 'text/*, .fit, .tcx'
-
+ts = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 db.init_app(app)
 
 dropzone = Dropzone(app)
 
+# Login manager setup
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.init_app(app)
 login_manager.refresh_view = 'auth.relogin'
 login_manager.needs_refresh_message = (u"Session timedout, please re-login")
 login_manager.needs_refresh_message_category = "info"
+
+# Mail manager setup
+app.config['MAIL_SERVER'] = "smtp.gmail.com"
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = "wilfried.thomare@gmail.com"
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
 
 @app.before_request
 def before_request():
@@ -54,26 +68,68 @@ def login():
 
 @auth.route('/login', methods=['POST'])
 def login_post():
-    email = request.form.get('email')
-    password = request.form.get('password')
-    remember = True if request.form.get('remember') else False
-
-    check_user = User.query.filter_by(email=email).first()
-
-    # check if the user actually exists
-    # take the user-supplied password, hash it, and compare it to the hashed password in the database
-    if not check_user or not check_password_hash(check_user.password, password):
-        flash('Please check your login details and try again.')
-        return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
-
-    # if the above check passes, then we know the user has the right credentials
-    login_user(check_user, remember=remember)
-    if Routine_user(os.path.join(base_dir, UPLOAD_FOLDER), check_user.name).after_log():
-        app.config['UPLOADED_PATH'] = os.path.join(base_dir, UPLOAD_FOLDER, check_user.name)
-        return redirect(url_for('main.profile'))
+    if request.form.get("logging_button"):
+        email = request.form.get('email')
+        password = request.form.get('password')
+        remember = True if request.form.get('remember') else False
+    
+        check_user = User.query.filter_by(email=email).first()
+    
+        # check if the user actually exists
+        # take the user-supplied password, hash it, and compare it to the hashed password in the database
+        if not check_user or not check_password_hash(check_user.password, password):
+            flash('Please check your login details and try again.')
+            return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
+    
+        # if the above check passes, then we know the user has the right credentials
+        login_user(check_user, remember=remember)
+        if Routine_user(os.path.join(base_dir, UPLOAD_FOLDER), check_user.name).after_log():
+            app.config['UPLOADED_PATH'] = os.path.join(base_dir, UPLOAD_FOLDER, check_user.name)
+            return redirect(url_for('main.profile'))
+        else:
+            return redirect(url_for('sign_error.html'))
+    elif request.form.get("reset_button"):
+        return redirect(url_for('auth.reset'))
     else:
-        return redirect(url_for('sign_error.html'))
+        return "404" # TODO
+    
+@auth.route("/reset", methods=["GET", "POST"])
+def reset():
+    form = EmailForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first_or_404()
+        token = ts.dumps(form.email.data, salt='recover-key')
+        
+        subject = "Password reset request"
+        recover_url = url_for('reset_for_token', token=token, _external=True)
+        html = render_template('email/recover.html', recover_url=recover_url) # TODO Add email folder and recover.html file
 
+        send_email(user.email, subject, html)
+
+        return redirect(url_for("index"))
+    return render_template('reset.html', form=form)        
+
+@auth.route("/reset/<token>", methods=["GET", "POST"])
+def reset_with_token(token):
+    try:
+        email = ts.loads(token, salt="recover-key", max_age=86400)
+    except:
+        return redirect(url_for("auth.reset"))
+    
+    form = PassworForm()
+    
+    if form.validate_on_submit():
+        user= User.query.filter_by(email=email).first_or_404()
+        user.password = form.password.data
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        return redirect(url_for("main.profile"))
+    
+    else:
+        render_template('reset_with_token.html', token=token)
+        
 @auth.route('/signup')
 def signup():
     return render_template('signup.html')
@@ -121,6 +177,15 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
     name = db.Column(db.String(1000))
+    
+    
+def send_email(email, subject, html):
+    msg = Message()
+    msg.subject = subject
+    msg.sender = app.config['MAIL_USERNAME']
+    msg.recipients = [email]
+    msg.html = html
+    mail.send(msg)
 
 
 @login_manager.user_loader
