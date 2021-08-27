@@ -11,7 +11,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from .forms import EmailForm, PassworForm
+from forms import EmailForm, PasswordForm
 from datetime import timedelta
 from itsdangerous import URLSafeTimedSerializer
 
@@ -20,7 +20,6 @@ from utils.routine_user import Routine_user
 from utils.cartho_gen import Cartho_gen
 from utils.meteo_gen import Meteo_gen
 
-from datetime import timedelta
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = 'static'
@@ -91,14 +90,17 @@ def login_post():
     elif request.form.get("reset_button"):
         return redirect(url_for('auth.reset'))
     else:
-        return "404" # TODO
+        debug = ""
+        queue = [ debug + " " +i for i in request.args.keys()]
+        return "404" + str(queue) # TODO
     
 @auth.route("/reset", methods=["GET", "POST"])
 def reset():
-    form = EmailForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first_or_404()
-        token = ts.dumps(form.email.data, salt='recover-key')
+    email = request.form.get('email')
+    check_user = User.query.filter_by(email=email).first()
+    if check_user:
+        user = User.query.filter_by(email=email).first_or_404()
+        token = ts.dumps(email, salt='recover-key')
         
         subject = "Password reset request"
         recover_url = url_for('reset_for_token', token=token, _external=True)
@@ -107,7 +109,8 @@ def reset():
         send_email(user.email, subject, html)
 
         return redirect(url_for("index"))
-    return render_template('reset.html', form=form)        
+    flash("Unknow email")
+    return render_template('index.html') # TODO Ajout d'un vrai template si email inconnu
 
 @auth.route("/reset/<token>", methods=["GET", "POST"])
 def reset_with_token(token):
@@ -116,7 +119,7 @@ def reset_with_token(token):
     except:
         return redirect(url_for("auth.reset"))
     
-    form = PassworForm()
+    form = PasswordForm()
     
     if form.validate_on_submit():
         user= User.query.filter_by(email=email).first_or_404()
